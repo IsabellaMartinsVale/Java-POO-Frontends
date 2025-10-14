@@ -37,6 +37,10 @@ public class MainApp {
         addMenuItem(cadastrosMenu, "Pessoas", () -> new PessoaList().setVisible(true));
         addMenuItem(cadastrosMenu, "Acessos", () -> new AcessoList().setVisible(true));
         addMenuItem(cadastrosMenu, "Contatos", () -> new ContatoList().setVisible(true));
+        addMenuItem(cadastrosMenu, "Custos", () -> new CustoList().setVisible(true));
+        addMenuItem(cadastrosMenu, "Produtos", () -> new ProdutoList().setVisible(true));
+        addMenuItem(cadastrosMenu, "Estoques", () -> new EstoqueList().setVisible(true));
+        addMenuItem(cadastrosMenu, "Preços", () -> new PrecoList().setVisible(true));
 
         // Define a barra de menus na janela
         mainFrame.setJMenuBar(menuBar);

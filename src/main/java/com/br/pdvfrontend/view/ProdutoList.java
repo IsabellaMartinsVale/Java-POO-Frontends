@@ -6,79 +6,69 @@ import com.br.pdvfrontend.service.ProdutoService;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.util.List;
 
 public class ProdutoList extends JFrame {
-
+    private ProdutoService produtoService = new ProdutoService();
     private JTable table;
-    private DefaultTableModel tableModel;
-    private JButton novoButton;
-    private JButton atualizarButton;
 
     public ProdutoList() {
-        setTitle("Lista de Produtos");
-        setSize(800, 600);
-        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        setTitle("Cadastro de Produtos");
+        setSize(800, 400);
+        setDefaultCloseOperation(DISPOSE_ON_CLOSE);
         setLocationRelativeTo(null);
 
-        // Table
-        String[] columnNames = {"Nome", "Referência", "Marca", "Categoria", "Fornecedor"};
-        tableModel = new DefaultTableModel(columnNames, 0);
-        table = new JTable(tableModel);
-        JScrollPane scrollPane = new JScrollPane(table);
+        JButton btnNovo = new JButton("Novo");
+        JButton btnEditar = new JButton("Editar");
+        JButton btnExcluir = new JButton("Excluir");
 
-        // Buttons
-        JPanel buttonPanel = new JPanel();
-        novoButton = new JButton("Novo Produto");
-        atualizarButton = new JButton("Atualizar");
-        buttonPanel.add(novoButton);
-        buttonPanel.add(atualizarButton);
+        btnNovo.addActionListener(e -> new ProdutoForm(null, this));
+        btnEditar.addActionListener(e -> editarProduto());
+        btnExcluir.addActionListener(e -> excluirProduto());
 
-        // Layout
-        Container contentPane = getContentPane();
-        contentPane.setLayout(new BorderLayout());
-        contentPane.add(scrollPane, BorderLayout.CENTER);
-        contentPane.add(buttonPanel, BorderLayout.SOUTH);
+        JPanel botoes = new JPanel();
+        botoes.add(btnNovo);
+        botoes.add(btnEditar);
+        botoes.add(btnExcluir);
 
-        // Actions
-        novoButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                ProdutoForm produtoForm = new ProdutoForm();
-                produtoForm.setVisible(true);
-            }
-        });
+        table = new JTable();
+        JScrollPane scroll = new JScrollPane(table);
 
-        atualizarButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                atualizarTabela();
-            }
-        });
+        add(scroll, BorderLayout.CENTER);
+        add(botoes, BorderLayout.SOUTH);
 
-        // Initial data load
         atualizarTabela();
+        setVisible(true);
     }
 
-    private void atualizarTabela() {
-        // Clear existing data
-        tableModel.setRowCount(0);
+    public void atualizarTabela() {
+        List<Produto> produtos = produtoService.listar();
+        DefaultTableModel model = new DefaultTableModel(new Object[]{"ID", "Nome", "Referência", "Marca", "Categoria", "Fornecedor"}, 0);
+        for (Produto p : produtos) {
+            model.addRow(new Object[]{p.getId(), p.getNome(), p.getReferencia(), p.getMarca(), p.getCategoria(), p.getFornecedor()});
+        }
+        table.setModel(model);
+    }
 
-        // Get data from service
-        List<Produto> produtos = ProdutoService.getInstance().getProdutos();
+    private void editarProduto() {
+        int linha = table.getSelectedRow();
+        if (linha != -1) {
+            Long id = (Long) table.getValueAt(linha, 0);
+            Produto produto = produtoService.buscarPorId(id);
+            new ProdutoForm(produto, this);
+        } else {
+            JOptionPane.showMessageDialog(this, "Selecione um produto para editar.");
+        }
+    }
 
-        // Populate table
-        for (Produto produto : produtos) {
-            Object[] rowData = {
-                    produto.getNome(),
-                    produto.getReferencia(),
-                    produto.getMarca(),
-                    produto.getCategoria(),
-                    produto.getFornecedor()
-            };
-            tableModel.addRow(rowData);
+    private void excluirProduto() {
+        int linha = table.getSelectedRow();
+        if (linha != -1) {
+            Long id = (Long) table.getValueAt(linha, 0);
+            produtoService.deletar(id);
+            atualizarTabela();
+        } else {
+            JOptionPane.showMessageDialog(this, "Selecione um produto para excluir.");
         }
     }
 }

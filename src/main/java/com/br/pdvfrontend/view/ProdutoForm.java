@@ -2,80 +2,83 @@ package com.br.pdvfrontend.view;
 
 import com.br.pdvfrontend.model.Produto;
 import com.br.pdvfrontend.service.ProdutoService;
-
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 
-public class ProdutoForm extends JFrame {
+public class ProdutoForm extends JDialog {
 
-    private JTextField nomeField;
-    private JTextField referenciaField;
-    private JTextField marcaField;
-    private JTextField categoriaField;
-    private JTextField fornecedorField;
-    private JButton salvarButton;
+    private JTextField txtNome, txtReferencia, txtMarca, txtCategoria, txtFornecedor;
+    private ProdutoService produtoService = new ProdutoService();
+    private Produto produto;
+    private ProdutoList parent;
 
-    public ProdutoForm() {
-        setTitle("Cadastro de Produto");
+    public ProdutoForm(Produto produto, ProdutoList parent) {
+        this.produto = produto;
+        this.parent = parent;
+
+        setTitle(produto == null ? "Novo Produto" : "Editar Produto");
         setSize(400, 350);
-        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-        setLocationRelativeTo(null);
+        setLayout(new GridLayout(7, 2, 10, 10));
+        setLocationRelativeTo(parent);
+        getRootPane().setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
-        JPanel panel = new JPanel(new GridLayout(6, 2, 10, 10));
-        panel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        add(new JLabel("Nome:"));
+        txtNome = new JTextField();
+        add(txtNome);
 
-        panel.add(new JLabel("Nome:"));
-        nomeField = new JTextField();
-        panel.add(nomeField);
+        add(new JLabel("Referência:"));
+        txtReferencia = new JTextField();
+        add(txtReferencia);
 
-        panel.add(new JLabel("Referência:"));
-        referenciaField = new JTextField();
-        panel.add(referenciaField);
+        add(new JLabel("Marca:"));
+        txtMarca = new JTextField();
+        add(txtMarca);
 
-        panel.add(new JLabel("Marca:"));
-        marcaField = new JTextField();
-        panel.add(marcaField);
+        add(new JLabel("Categoria:"));
+        txtCategoria = new JTextField();
+        add(txtCategoria);
 
-        panel.add(new JLabel("Categoria:"));
-        categoriaField = new JTextField();
-        panel.add(categoriaField);
+        add(new JLabel("Fornecedor:"));
+        txtFornecedor = new JTextField();
+        add(txtFornecedor);
 
-        panel.add(new JLabel("Fornecedor:"));
-        fornecedorField = new JTextField();
-        panel.add(fornecedorField);
+        add(new JLabel()); // Espaçador
+        add(new JLabel()); // Espaçador
 
-        salvarButton = new JButton("Salvar");
-        panel.add(new JLabel()); // empty label for spacing
-        panel.add(salvarButton);
+        JButton btnSalvar = new JButton("Salvar");
+        btnSalvar.addActionListener(e -> salvar());
+        add(btnSalvar);
 
-        salvarButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                salvarProduto();
-            }
-        });
+        JButton btnCancelar = new JButton("Cancelar");
+        btnCancelar.addActionListener(e -> dispose());
+        add(btnCancelar);
 
-        add(panel);
-    }
-
-    private void salvarProduto() {
-        String nome = nomeField.getText();
-        String referencia = referenciaField.getText();
-        String marca = marcaField.getText();
-        String categoria = categoriaField.getText();
-        String fornecedor = fornecedorField.getText();
-
-        if (nome.isEmpty() || referencia.isEmpty() || marca.isEmpty() || categoria.isEmpty() || fornecedor.isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Todos os campos são obrigatórios.", "Erro de Validação", JOptionPane.ERROR_MESSAGE);
-            return;
+        if (produto != null) {
+            txtNome.setText(produto.getNome());
+            txtReferencia.setText(produto.getReferencia());
+            txtMarca.setText(produto.getMarca());
+            txtCategoria.setText(produto.getCategoria());
+            txtFornecedor.setText(produto.getFornecedor());
         }
 
-        Produto novoProduto = new Produto(nome, referencia, marca, categoria, fornecedor);
-        ProdutoService.getInstance().addProduto(novoProduto);
+        setModal(true);
+        setVisible(true);
+    }
 
-        JOptionPane.showMessageDialog(this, "Produto salvo com sucesso!");
-        dispose(); // Close the form after saving
+    private void salvar() {
+        if (produto == null) {
+            produto = new Produto();
+        }
+
+        produto.setNome(txtNome.getText());
+        produto.setReferencia(txtReferencia.getText());
+        produto.setMarca(txtMarca.getText());
+        produto.setCategoria(txtCategoria.getText());
+        produto.setFornecedor(txtFornecedor.getText());
+
+        produtoService.salvar(produto);
+
+        parent.atualizarTabela();
+        dispose();
     }
 }

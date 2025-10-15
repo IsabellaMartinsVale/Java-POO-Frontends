@@ -2,6 +2,7 @@ package com.br.pdvfrontend.model;
 
 public class Produto {
     //atributos
+    private Long id;
     private String nome;
     private String referencia;
     private String marca;
@@ -9,7 +10,8 @@ public class Produto {
     private String fornecedor;
 
     //construtor
-    public Produto (String nome, String referencia, String marca, String categoria, String fornecedor){
+    public Produto(Long id, String nome, String referencia, String marca, String categoria, String fornecedor){
+        this.id = id;
         this.categoria = categoria;
         this.nome = nome;
         this.fornecedor = fornecedor;
@@ -17,7 +19,13 @@ public class Produto {
         this.referencia = referencia;
     }
 
+    public Produto() {}
+
     //getters
+    public Long getId() {
+        return id;
+    }
+
     public String getCategoria() {
         return categoria;
     }
@@ -39,6 +47,10 @@ public class Produto {
     }
 
     //setters
+    public void setId(Long id) {
+        this.id = id;
+    }
+
     public void setCategoria(String categoria) {
         this.categoria = categoria;
     }

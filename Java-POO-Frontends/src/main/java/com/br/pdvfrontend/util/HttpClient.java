@@ -7,25 +7,34 @@ import java.net.http.HttpResponse;
 
 public class HttpClient {
 
+    private static final String BASE_URL = "http://localhost:8080";
     private static final java.net.http.HttpClient client = java.net.http.HttpClient.newHttpClient();
-    private static final String BASE_URL = "http://localhost:8080"; // Ajuste se o seu backend estiver em outro lugar
 
-    public static HttpResponse<String> sendPostRequest(String endpoint, String jsonBody) throws IOException, InterruptedException {
+    public static String sendPostRequest(String endpoint, String jsonPayload) throws IOException, InterruptedException {
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(BASE_URL + endpoint))
                 .header("Content-Type", "application/json")
-                .POST(HttpRequest.BodyPublishers.ofString(jsonBody))
+                .POST(HttpRequest.BodyPublishers.ofString(jsonPayload))
                 .build();
-
-        return client.send(request, HttpResponse.BodyHandlers.ofString());
+        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+        return response.body();
     }
 
-    public static HttpResponse<String> sendGetRequest(String endpoint) throws IOException, InterruptedException {
+    public static String sendGetRequest(String endpoint) throws IOException, InterruptedException {
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(BASE_URL + endpoint))
                 .GET()
                 .build();
+        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+        return response.body();
+    }
 
-        return client.send(request, HttpResponse.BodyHandlers.ofString());
+    public static String sendDeleteRequest(String endpoint) throws IOException, InterruptedException {
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(BASE_URL + endpoint))
+                .DELETE()
+                .build();
+        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+        return response.body();
     }
 }

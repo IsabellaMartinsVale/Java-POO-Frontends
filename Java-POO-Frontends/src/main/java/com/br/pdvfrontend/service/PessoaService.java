@@ -1,55 +1,75 @@
 package com.br.pdvfrontend.service;
 
 import com.br.pdvfrontend.model.Pessoa;
-import java.util.ArrayList;
+import com.br.pdvfrontend.util.HttpClient;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+
+import java.io.IOException;
+import java.lang.reflect.Type;
+import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
-import java.util.concurrent.atomic.AtomicLong;
-import java.util.stream.Collectors;
+import java.util.Map;
 
 public class PessoaService {
 
-    private static final List<Pessoa> mockPessoas = new ArrayList<>();
-    private static final AtomicLong idCounter = new AtomicLong(4);
-
-    static {
-        mockPessoas.add(new Pessoa(1L, "João da Silva", "111.111.111-11", "joao.silva@example.com"));
-        mockPessoas.add(new Pessoa(2L, "Maria Oliveira", "222.222.222-22", "maria.oliveira@example.com"));
-        mockPessoas.add(new Pessoa(3L, "José Santos", "333.333.333-33", "jose.santos@example.com"));
-    }
+    private final Gson gson = new Gson();
 
     public List<Pessoa> listar() {
-        // Retorna uma cópia para evitar modificações externas na lista original
-        return new ArrayList<>(mockPessoas);
+        try {
+            String jsonResponse = HttpClient.sendGetRequest("/pessoas");
+            Type listType = new TypeToken<List<Pessoa>>() {}.getType();
+            return gson.fromJson(jsonResponse, listType);
+        } catch (IOException | InterruptedException e) {
+            e.printStackTrace();
+            return Collections.emptyList();
+        }
     }
 
     public Pessoa buscarPorId(Long id) {
-        return mockPessoas.stream()
-                .filter(p -> p.getId().equals(id))
-                .findFirst()
-                .orElse(null);
+        try {
+            String jsonResponse = HttpClient.sendGetRequest("/pessoas/" + id);
+            return gson.fromJson(jsonResponse, Pessoa.class);
+        } catch (IOException | InterruptedException e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 
     public Pessoa salvar(Pessoa pessoa) {
-        if (pessoa.getId() == null) { // Novo cadastro
-            pessoa.setId(idCounter.getAndIncrement());
-            mockPessoas.add(pessoa);
-        } else { // Atualização
-            atualizar(pessoa);
+        try {
+            String jsonPayload = gson.toJson(pessoa);
+            String jsonResponse = HttpClient.sendPostRequest("/pessoas", jsonPayload);
+            return gson.fromJson(jsonResponse, Pessoa.class);
+        } catch (IOException | InterruptedException e) {
+            e.printStackTrace();
+            return null;
         }
-        return pessoa;
     }
 
-    public void atualizar(Pessoa pessoa) {
-        for (int i = 0; i < mockPessoas.size(); i++) {
-            if (Objects.equals(mockPessoas.get(i).getId(), pessoa.getId())) {
-                mockPessoas.set(i, pessoa);
-                return;
+    public boolean deletar(Long id) {
+        try {
+            HttpClient.sendDeleteRequest("/pessoas/" + id);
+            return true;
+        } catch (IOException | InterruptedException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public Pessoa login(String email, String senha) {
+        try {
+            Map<String, String> credentials = Map.of("email", email, "senha", senha);
+            String jsonPayload = gson.toJson(credentials);
+            String jsonResponse = HttpClient.sendPostRequest("/auth/login", jsonPayload);
+
+            if (jsonResponse == null || jsonResponse.isEmpty()) {
+                return null;
             }
+            return gson.fromJson(jsonResponse, Pessoa.class);
+        } catch (IOException | InterruptedException e) {
+            e.printStackTrace();
+            return null;
         }
-    }
-
-    public void deletar(Long id) {
-        mockPessoas.removeIf(p -> p.getId().equals(id));
     }
 }

@@ -44,6 +44,12 @@
             <artifactId>jackson-databind</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>com.google.code.gson</groupId>
+            <artifactId>gson</artifactId>
+            <version>2.10.1</version>
+        </dependency>
+
         <!-- Look & Feel moderno para Swing -->
         <dependency>
             <groupId>com.formdev</groupId>
